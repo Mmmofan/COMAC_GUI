@@ -105,8 +105,6 @@ class Test(object):
     def set_id(self):
         self.robot_id = self.id_group[self.agv_var.get()]['robot_id']
         self.id_ = self.id_group[self.agv_var.get()]['id_']
-        print(self.robot_id)
-        print(self.id_)
 
 
     def func_1(self):
