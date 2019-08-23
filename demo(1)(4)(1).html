@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>mooe-robot demo</title>
+    <style>
+    input { width: 120px; margin: 3px; }
+    button { margin: 5px 0; }
+    </style>
+</head>
+<body>
+
+    服务器: <input id="server" value="http://192.168.7.254" />
+    Token: <input id="token" value="NWQ7TKPAX8HC2cJDdfKFYH4kTbXAaSh4WNde4YBPSbXR5fRPji7C5hnbSD8HcpM23ABQMkKACdWrEFMkE3mfS3kFRPJYKKbzi36e2RtPyBMTCbJaRDGbCBWrX3i7FFrb" />
+    机器人ID: <input id="robot_id" value="W50020190812002" />
+    <br>
+
+    <button id="speed">发送线速度 0.6</button>
+    <button id="angle">发送角速度 0.6</button>
+    <button id="follow">随动180度</button>
+    <button id="jack_up">顶升上升</button>
+    <button id="jack_down">顶升下降</button>
+    <button id="odom">查询实时速度坐标</button>
+    <button id="robot_disabled_true">禁用</button>
+    <button id="robot_disabled_false">启用</button>
+
+    <br><br>
+    模板ID: <input id="template" value="2" style="width: 30px" />
+    <button id="mission_execute">发送任务</button>
+    <button id="mission_cancel">取消任务</button>
+    <button id="mission_status">查询任务状态</button>
+
+    <br><br>
+    id: <input id="id" value="0" style="width:40px" />
+    t: <input id="t" value="0" style="width:40px" />
+    x: <input id="x" value="0" style="width:40px" />
+    y: <input id="y" value="0" style="width:40px" />
+    z: <input id="z" value="0" style="width:40px" />
+    <button id="mobile_platform_send">发送移动平台</button>
+    <button id="mobile_platform_move">查询移动平台</button>
+    <button id="mobile_platform_pressure">查询压力传感器</button>
+    <br>
+    <button id="mobile_platform_move_reset">移动平台复位</button>
+    <button id="mobile_platform_pressure_reset">压力传感器复位</button>
+
+    <script>
+        let mission_id = null;
+        let s = 0;
+
+        setInterval(()=>{
+            fetch(document.querySelector('#server').value + '/v1/now', {
+                method: 'POST',
+                body: JSON.stringify({
+                    token: document.querySelector('#token').value,
+                }),
+            }).then(res => res.json().then(res => {
+                s = Date.now() - res.data;
+            }));
+        },1000);
+
+        document.getElementById('robot_disabled_true').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/robot_update', {
+                method: 'POST',
+                body: JSON.stringify({
+                    token: document.querySelector('#token').value,
+                    id: document.querySelector('#robot_id').value,
+                    disabled:true,
+                }),
+            }).then(res => res.text().then(res => {
+                if (res.error) {
+                    alert(res.error);
+                } else {
+                    alert(res);
+                }
+            }));
+        };
+
+        document.getElementById('robot_disabled_false').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/robot_update', {
+                method: 'POST',
+                body: JSON.stringify({
+                    token: document.querySelector('#token').value,
+                    id: document.querySelector('#robot_id').value,
+                    disabled:false,
+                }),
+            }).then(res => res.text().then(res => {
+                if (res.error) {
+                    alert(res.error);
+                } else {
+                    alert(res);
+                }
+            }));
+        };
+
+        document.getElementById('speed').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/cmd_vel', {
+                method: 'POST',
+                body: JSON.stringify({
+                    token: document.querySelector('#token').value,
+                    robot_id: document.querySelector('#robot_id').value,
+                    speed: 0.6,
+                    angle: 0,
+                }),
+            }).then(res => res.text().then(res => {
+                if (res.error) {
+                    alert(res.error);
+                } else {
+                    alert(res);
+                }
+            }));
+        };
+
+        document.getElementById('odom').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/robot_odom', {
+                method: 'POST',
+                body: JSON.stringify({
+                    token: document.querySelector('#token').value,
+                    id: document.querySelector('#robot_id').value,
+                }),
+            }).then(res => res.text().then(res => {
+                let msg = JSON.parse(res);
+                    if (msg.data) {
+                        alert(res + ' ' + (Date.now()-msg.data.timestamp-s) + 'ms');
+                    } else {
+                        alert(res);
+                    }
+            }));
+        };
+
+        document.getElementById('angle').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/cmd_vel', {
+                method: 'POST',
+                body: JSON.stringify({
+                    token: document.querySelector('#token').value,
+                    robot_id: document.querySelector('#robot_id').value,
+                    speed: 0,
+                    angle: 0.6,
+                }),
+            }).then(res => res.text().then(res => {
+                if (res.error) {
+                    alert(res.error);
+                } else {
+                    alert(res);
+                }
+            }));
+        };
+
+        document.getElementById('follow').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/follow', {
+                method: 'POST',
+                body: JSON.stringify({
+                    token: document.querySelector('#token').value,
+                    robot_id: document.querySelector('#robot_id').value,
+                    follow: 1.56,
+                }),
+            }).then(res => res.text().then(res => {
+                if (res.error) {
+                    alert(res.error);
+                } else {
+                    alert(res);
+                }
+            }));
+        };
+
+        document.getElementById('jack_up').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/jack_up', {
+                method: 'POST',
+                body: JSON.stringify({
+                    token: document.querySelector('#token').value,
+                    robot_id: document.querySelector('#robot_id').value,
+                    jack_up: 'start_up',
+                }),
+            }).then(res => res.text().then(res => {
+                if (res.error) {
+                    alert(res.error);
+                } else {
+                    alert(res);
+                }
+            }));
+        };
+
+        document.getElementById('jack_down').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/jack_up', {
+                method: 'POST',
+                body: JSON.stringify({
+                    token: document.querySelector('#token').value,
+                    robot_id: document.querySelector('#robot_id').value,
+                    jack_up: 'start_down',
+                }),
+            }).then(res => res.text().then(res => {
+                if (res.error) {
+                    alert(res.error);
+                } else {
+                    alert(res);
+                }
+            }));
+        };
+
+        document.getElementById('mission_execute').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/mission_execute', {
+                method: 'POST',
+                body: JSON.stringify({
+                    token: document.querySelector('#token').value,
+                    
+                    // 执行任务的机器人
+                    robot_id: document.querySelector('#robot_id').value,
+
+                    // 执行的任务模板
+                    id: document.querySelector('#template').value,
+                }),
+            }).then(res => res.json().then(res => {
+                if (res.error) {
+                    alert(res.error);
+                } else {
+                    mission_id = res.data.mission.id;
+                    alert('mission id:'+res.data.mission.id);
+                }
+            }));
+        };
+
+        document.getElementById('mission_status').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/missions', {
+                method: 'POST',
+                body: JSON.stringify({
+                    token: document.querySelector('#token').value,
+
+                    // 限制为1000条
+                    limit: 1000
+                }),
+            }).then(res => res.json().then(res => {
+                res.data.map(mission => {
+                    if (mission.id === mission_id) {
+                        /*
+                        0:'准备执行',
+                        1:'执行中',
+                        2:'执行结束',
+                        3:'已取消',
+                        4:'执行失败',
+                        5:'等待接收',
+                        6:'暂停中',
+                        7:'异常',
+                        */
+                        alert('mission status: '+mission.status);
+                    }
+                })
+            }));
+        };
+
+        document.getElementById('mission_cancel').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/mission_cancel', {
+                method: 'POST',
+                body: JSON.stringify({
+                    token: document.querySelector('#token').value,
+                    id: mission_id
+                }),
+            }).then(res => res.text().then(res => {
+                alert(res);
+            }));
+        };
+        
+
+        document.getElementById('mobile_platform_move').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/mobile_platform_move', {
+                method: 'POST',
+                body: JSON.stringify({
+                    id: parseInt(document.querySelector('#id').value),
+                    token: document.querySelector('#token').value
+                }),
+            }).then(res => res.text().then(res => {
+                if (res.error) {
+                    alert(res.error);
+                } else {
+                    let msg = JSON.parse(res);
+                    if (msg.data) {
+                        alert(res + ' ' + (Date.now()-msg.data.timestamp-s) + 'ms');
+                    } else {
+                        alert(res);
+                    }
+                }
+            }));
+        };
+
+        document.getElementById('mobile_platform_pressure').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/mobile_platform_pressure', {
+                method: 'POST',
+                body: JSON.stringify({
+                    id: parseInt(document.querySelector('#id').value),
+                    token: document.querySelector('#token').value
+                }),
+            }).then(res => res.text().then(res => {
+                let msg = JSON.parse(res);
+                    if (msg.data) {
+                        alert(res + ' ' + (Date.now()-msg.data.timestamp-s) + 'ms');
+                    } else {
+                        alert(res);
+                    }
+            }));
+        };
+
+        document.getElementById('mobile_platform_send').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/mobile_platform_send', {
+                method: 'POST',
+                body: JSON.stringify({
+                    t: parseFloat(document.querySelector('#t').value),
+                    x: parseFloat(document.querySelector('#x').value),
+                    y: parseFloat(document.querySelector('#y').value),
+                    z: parseFloat(document.querySelector('#z').value),
+                    id: parseInt(document.querySelector('#id').value),
+                    token: document.querySelector('#token').value
+                }),
+            }).then(res => res.text().then(res => {
+                if (res.error) {
+                    alert(res.error);
+                } else {
+                    alert(res);
+                }
+            }));
+        };
+
+        document.getElementById('mobile_platform_move_reset').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/mobile_platform_move_reset', {
+                method: 'POST',
+                body: JSON.stringify({
+                    id: parseInt(document.querySelector('#id').value),
+                    token: document.querySelector('#token').value
+                }),
+            }).then(res => res.text().then(res => {
+                alert(res);
+            }));
+        };
+
+        document.getElementById('mobile_platform_pressure_reset').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/mobile_platform_pressure_reset', {
+                method: 'POST',
+                body: JSON.stringify({
+                    id: parseInt(document.querySelector('#id').value),
+                    token: document.querySelector('#token').value
+                }),
+            }).then(res => res.text().then(res => {
+                alert(res);
+            }));
+        };
+
+    </script>
+</body>
+</html>
