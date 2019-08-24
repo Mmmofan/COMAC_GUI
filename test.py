@@ -5,6 +5,7 @@ import tkinter.messagebox as tm
 from control import Controller
 import requests as req
 import time
+from threading import Thread
 
 
 class Test(object):
@@ -15,6 +16,8 @@ class Test(object):
         self.master.geometry('1000x600')
         self.master.resizable(width=False, height=False)
         self.master.configure(background='white')
+
+        self.warn = False
 
         # 选择调试AGV
         self.choose_label = tk.Label(self.master, text='选择调试AGV', bg='yellow', font=('Arial', 12), width=16).place(x=40,y=30)
@@ -105,6 +108,9 @@ class Test(object):
         self.read_coord_bt = ttk.Button(self.master, text='Get Coord', width='16', command=self.read_coord)
         self.read_coord_bt.place(x=485, y=330)
 
+        # Test 1: 车动，并实时读取传感器值
+        self.step1_button = ttk.Button(self.master, text='Step1', width=10, command=self.step1_func)
+        self.step1_button.place(x=650, y=120)
 
     def set_id(self):
         self.robot_id = self.id_group[self.agv_var.get()]['robot_id']
@@ -112,6 +118,9 @@ class Test(object):
 
 
     def func_1(self):
+        """
+        Follow 按钮功能，三轴不动AGV旋转
+        """
         follow_var = float(self.follow_angle_var.get())
         job = req.post(self.server + self.follow, json={'token' : self.token, 
                                                         'follow' : follow_var,
@@ -120,21 +129,20 @@ class Test(object):
 
 
     def func_2(self):
+        """
+        AGV 移动功能
+        """
         speed = float(self.mr_speed.get())
         angle = float(self.mr_angle.get())
-        for i in range(40):
+        tmp_speed = 0
+        while not self.warn:
+            if tmp_speed < speed and speed != 0:
+                tmp_speed += 0.02
             job = req.post(self.server + self.vel, json={'token' : self.token,
-                                                        'speed' : speed,
+                                                        'speed' : tmp_speed,
                                                         'angle' : angle,
                                                         'robot_id' : self.robot_id})
             time.sleep(1/20.0)
-
-
-    def read_sensor(self):
-        job = req.post(self.server + self.mobile_platform_pressure, json={'id' : self.id_,
-                                                                        'token' : self.token})
-        data = job.json()['data']
-        self.cur_pressure.set('x:{:3.2f}, y:{:3.2f}, z:{:3.2f}'.format(data['x'], data['y'], data['z']))
 
 
     def func_3(self):
@@ -146,11 +154,31 @@ class Test(object):
                                                                     'id' : self.id_, 'token': self.token})
 
 
+    def read_sensor(self):
+        job = req.post(self.server + self.mobile_platform_pressure, json={'id' : self.id_,
+                                                                        'token' : self.token})
+        data = job.json()['data']
+        self.cur_pressure.set('x:{:3.2f}, y:{:3.2f}, z:{:3.2f}'.format(data['x'], data['y'], data['z']))
+        if abs(data['x']) > 15 or abs(data['y']) > 15:
+            self.warn = True
+        time.sleep(0.2)
+
+
     def read_coord(self):
         job = req.post(self.server + self.mobile_platform_move, json={'id': self.id_,
                                                                     'token': self.token})
         data = job.json()['data']
         self.cur_coord.set('x:{:3.2f}, y:{:3.2f}, z:{:3.2f}'.format(data['x'], data['y'], data['z']))
+        time.sleep(0.2)
+
+
+    def step1_func(self):
+        t1 = Thread(self.func_2, args=())
+        t2 = Thread(self.read_sensor, args=())
+        t3 = Thread(self.read_coord, args=())
+        t1.start()
+        t2.start()
+        t3.start()
 
 
 if __name__ == "__main__":
