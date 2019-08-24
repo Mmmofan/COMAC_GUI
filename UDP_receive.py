@@ -2,21 +2,21 @@ import socket
 import json
 class IGPS_receiver(object):
 
-    def __init__(self,host,port,bufsize):
-        self.sever_host=host
-        self.sever_port=port
-        self.bufsize=bufsize
-        self.addr=(self.sever_host,self.sever_port)
-        self.data=[]
-        self.igps_client=socket.socket(family=socket.AF_INET,type=socket.SOCK_DGRAM)
+    def __init__(self, host, port, bufsize):
+        self.sever_host = host
+        self.sever_port = port
+        self.bufsize = bufsize
+        self.addr = (self.sever_host, self.sever_port)
+        self.data = []
+        self.igps_client = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         # self.igps_client.bind(self.addr)
 
     def read_data(self):
-        self.igps_client.sendto(b'go',self.addr)
-        data,addr=self.igps_client.recvfrom(self.bufsize)
+        self.igps_client.sendto(b'go', self.addr)
+        data,addr = self.igps_client.recvfrom(self.bufsize)
         # try:
-        dict_data=json.loads(data.decode('utf-8'))
-        self.data+=[dict_data]
+        dict_data = json.loads(data.decode('utf-8'))
+        self.data += [dict_data]
         # except:
         #     self.judge()
 
