@@ -79,7 +79,8 @@ class Test(object):
         ## 调试按钮
         self.button_3 = ttk.Button(self.master, text='Coordinator', width='16', command=self.func_3)
         self.button_3.place(x=70, y=360)
-        self.x_platform_label= tk.Label(self.master, text='X轴坐标：', bg='white', font=('Arial', 10), width=10).place(x=200,y=335)
+        self.t_platform_label = tk.Label(self.master, text='运行时间: ', bg='white', font=('Arial', 10), width=10).place(x=200,y=425)
+        self.x_platform_label = tk.Label(self.master, text='X轴坐标：', bg='white', font=('Arial', 10), width=10).place(x=200,y=335)
         self.y_platform_label = tk.Label(self.master, text='y轴坐标：', bg='white', font=('Arial', 10), width=10).place(x=200,y=365)
         self.z_platform_label = tk.Label(self.master, text='z轴坐标：', bg='white', font=('Arial', 10), width=10).place(x=200,y=395)
         ## 数值
@@ -89,9 +90,12 @@ class Test(object):
         self.y_coord.set("0.0")
         self.z_coord = tk.StringVar()
         self.z_coord.set("0.0")
-        self.x_coord_ent = tk.Entry(self.master,width=10, font=('Arial', 10), textvariable=self.x_coord).place(x=300,y=330)
-        self.y_coord_ent = tk.Entry(self.master, width=10, font=('Arial', 10), textvariable=self.y_coord).place(x=300,y=360)
-        self.z_coord_ent = tk.Entry(self.master, width=10, font=('Arial', 10), textvariable=self.z_coord).place(x=300,y=390)
+        self.t_num = tk.StringVar()
+        self.t_num.set("3.0")
+        self.x_coord_ent = tk.Entry(self.master,width=10, font=('Arial', 10), textvariable=self.x_coord).place(x=300,y=335)
+        self.y_coord_ent = tk.Entry(self.master, width=10, font=('Arial', 10), textvariable=self.y_coord).place(x=300,y=365)
+        self.z_coord_ent = tk.Entry(self.master, width=10, font=('Arial', 10), textvariable=self.z_coord).place(x=300,y=395)
+        self.t_num_ent = tk.Entry(self.master, width=10, font=('Arial', 10), textvariable=self.t_num).place(x=300, y=425)
 
         # 读取三轴平台坐标值
         self.cur_coord_label = tk.Label(self.master, text='当前坐标', bg='white', font=('Arial', 10), width=6).place(x=485,y=360)
@@ -134,10 +138,11 @@ class Test(object):
 
 
     def func_3(self):
+        t = float(self.t_num.get())
         x = float(self.x_coord.get())
         y = float(self.y_coord.get())
         z = float(self.z_coord.get())
-        job = req.post(self.server + self.mobile_platform_send, json={'x' : x, 'y' : y, 'z' : z,
+        job = req.post(self.server + self.mobile_platform_send, json={'t': t,'x' : x, 'y' : y, 'z' : z,
                                                                     'id' : self.id_, 'token': self.token})
 
 
@@ -145,7 +150,7 @@ class Test(object):
         job = req.post(self.server + self.mobile_platform_move, json={'id': self.id_,
                                                                     'token': self.token})
         data = job.json()['data']
-        self.cur_pressure.set('x:{:3.2f}, y:{:3.2f}, z:{:3.2f}'.format(data['x'], data['y'], data['z']))
+        self.cur_coord.set('x:{:3.2f}, y:{:3.2f}, z:{:3.2f}'.format(data['x'], data['y'], data['z']))
 
 
 if __name__ == "__main__":
