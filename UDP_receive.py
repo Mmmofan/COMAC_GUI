@@ -24,7 +24,9 @@ class IGPS_receiver(object):
         self.igps_client.close()
 
     def fliter_data(self):
-        self.output = self.data[-1]
+        self.output_x=self.data[-1]["coord"]["3"]["X"]
+        self.output_y = self.data[-1]["coord"]["3"]["y"]
+        self.output_z = self.data[-1]["coord"]["3"]["y"]
 
     # def judge(self):
     #     pass
@@ -35,7 +37,9 @@ class IGPS_receiver(object):
 "4":{"Flags":0,"LocalCount":254042966,"RPM":1750,"T":34.28936004638672,"t1":0.44152122735977173,"t2":0.721427321434021}}}}
 '''
 if '__name__'=='__main__':
-    re=IGPS_receiver('127.0.0.1', 10000, 1024)
+    '''大致操作过程：建立连接，sever开始不断发送数据，read_data一次读取一次数据包，udp性质决定，一次一个完整的包，然后fliter_data对字典
+    处理，读取xyz数据，最后可通过close断开连接'''
+    re=IGPS_receiver('127.0.0.1',10000,1024)#建立连接
 
 
 
