@@ -14,7 +14,7 @@ class Test_three(object):
         self.master.resizable(width=False, height=False)
         self.master.configure(background='white')
 
-        self.warn = False
+        self.warn = False#力超过阈值报警，三车共有，一车报警，全部停
         self.id_group = id_group
         self.server = server
         self.token = token
@@ -24,7 +24,7 @@ class Test_three(object):
         self.mobile_platform_move     = '/v1/mobile_platform_move'
         self.mobile_platform_send     = '/v1/mobile_platform_send'
         self.mobile_platform_pressure = '/v1/mobile_platform_pressure'
-        self.moving1 = None
+        self.moving1 = None#三个车的一个flag指标，每个车一个，这个车停了，这个指标会告诉力传感器读数停止
         self.moving2 = None
         self.moving3 = None
         self.labe11=tk.Label(self.master,text='AGV1', width='16',bg='yellow').place(x=200,y=100)
@@ -79,9 +79,10 @@ class Test_three(object):
 #threadlocal感觉适合几个单独级别一样的线程，现在想写个3线程，每个线程底下还有两线程，所以先没用threadlocal
 
     def set_id(self,id):
-        robot_id = self.id_group[id]['robot_id']
-        id_= self.id_group[id]['id_']
-        t1=Thread(target=self.move,args=(id,))
+        #一个id输入就够了
+        # robot_id = self.id_group[id]['robot_id']
+        # id_= self.id_group[id]['id_']
+        t1=Thread(target=self.move,args=(id,))#每个车两个线程，一个走，一个读力传感器
         t2=Thread(target=self.read_sensor,args=(id,))
         t1.start()
         t2.start()
@@ -89,7 +90,7 @@ class Test_three(object):
 
 
     def thread_start(self):
-        t1=Thread(target=self.set_id,args=(1,))
+        t1=Thread(target=self.set_id,args=(1,))#三条线程，都是set_id出发，设置每台车id，输入值为该车ID
         t2 = Thread(target=self.set_id,args=(2,))
         t3 = Thread(target=self.set_id,args=(3,))
         print('Thread create')
@@ -106,7 +107,7 @@ class Test_three(object):
         # while not self.warn:
         #     if tmp_speed < speed and speed != 0:
         #         tmp_speed += 0.02
-        for i in range(30):
+        for i in range(30):#速度没设加减速，今天的加减速没push到github上，之后可以加，影响不大
             if self.warn:
                 break
             job = req.post(self.server + self.vel, json={'token' : self.token,
