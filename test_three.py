@@ -118,7 +118,7 @@ class Test_three(object):
         self.moving[id] = False
 
     def read_sensor(self,id):
-        while not self.warn and self.moving[id]:
+        while not self.warn and self.moving[id]:#如果没报警，没停车，一直读数
             job = req.post(self.server + self.mobile_platform_pressure, json={'id' : id,
                                                                             'token' : self.token})
             data = job.json()['data']
