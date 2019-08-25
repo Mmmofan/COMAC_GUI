@@ -39,6 +39,7 @@ class Test(object):
         self.mobile_platform_move     = '/v1/mobile_platform_move'
         self.mobile_platform_send     = '/v1/mobile_platform_send'
         self.mobile_platform_pressure = '/v1/mobile_platform_pressure'
+        self.moving = None
 
         # 定义组件
         ## 平台不动，AGV转向，输入弧度
@@ -94,7 +95,7 @@ class Test(object):
         self.z_coord = tk.StringVar()
         self.z_coord.set("0.0")
         self.t_num = tk.StringVar()
-        self.t_num.set("3.0")
+        self.t_num.set("2000")
         self.x_coord_ent = tk.Entry(self.master,width=10, font=('Arial', 10), textvariable=self.x_coord).place(x=300,y=335)
         self.y_coord_ent = tk.Entry(self.master, width=10, font=('Arial', 10), textvariable=self.y_coord).place(x=300,y=365)
         self.z_coord_ent = tk.Entry(self.master, width=10, font=('Arial', 10), textvariable=self.z_coord).place(x=300,y=395)
@@ -132,20 +133,28 @@ class Test(object):
         """
         AGV 移动功能
         """
+        self.moving = True
         speed = float(self.mr_speed.get())
         angle = float(self.mr_angle.get())
         tmp_speed = 0
-        while not self.warn:
-            if tmp_speed < speed and speed != 0:
-                tmp_speed += 0.02
+        # while not self.warn:
+        #     if tmp_speed < speed and speed != 0:
+        #         tmp_speed += 0.02
+        for i in range(30):
+            if self.warn:
+                break
             job = req.post(self.server + self.vel, json={'token' : self.token,
-                                                        'speed' : tmp_speed,
+                                                        'speed' : speed,
                                                         'angle' : angle,
                                                         'robot_id' : self.robot_id})
             time.sleep(1/20.0)
+        self.moving = False
 
 
     def func_3(self):
+        """
+        三轴
+        """
         t = float(self.t_num.get())
         x = float(self.x_coord.get())
         y = float(self.y_coord.get())
@@ -155,11 +164,12 @@ class Test(object):
 
 
     def read_sensor(self):
+        # while not self.warn and self.moving:
         job = req.post(self.server + self.mobile_platform_pressure, json={'id' : self.id_,
                                                                         'token' : self.token})
         data = job.json()['data']
         self.cur_pressure.set('x:{:3.2f}, y:{:3.2f}, z:{:3.2f}'.format(data['x'], data['y'], data['z']))
-        if abs(data['x']) > 15 or abs(data['y']) > 15:
+        if abs(data['x']) > 20 or abs(data['y']) > 20:
             self.warn = True
         time.sleep(0.2)
 
@@ -173,12 +183,14 @@ class Test(object):
 
 
     def step1_func(self):
-        t1 = Thread(self.func_2, args=())
-        t2 = Thread(self.read_sensor, args=())
-        t3 = Thread(self.read_coord, args=())
+        t1 = Thread(target=self.func_2)
+        t2 = Thread(target=self.read_sensor)
+        # t3 = Thread(name=self.read_coord)
+        print('Thread create')
         t1.start()
         t2.start()
-        t3.start()
+        # t3.start()
+        print('Thread start')
 
 
 if __name__ == "__main__":
@@ -187,6 +199,9 @@ if __name__ == "__main__":
     robot_id_group = {'1' : {'robot_id':'W50020190812003', 'id_':1},
                       '2' : {'robot_id':'W50020190703001', 'id_':2},
                       '3' : {'robot_id':'W50020190812002', 'id_':3}}
+    # 251 : 1 
+    # 252 : 2
+    # 253 : 3
 
     test = Test(tk.Tk(), server, token, robot_id_group)
     test.master.mainloop()
