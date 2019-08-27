@@ -27,6 +27,14 @@
     <button id="robot_disabled_false">启用</button>
 
     <br><br>
+    距离: <input id="distance" value="0" style="width:40px" />
+    速度: <input id="speed1" value="0" style="width:40px" />
+    <button id="move">发送移动</button>
+    |
+    角度: <input id="rotate" value="0" style="width:40px" />
+    <button id="rotate_send">发送转动</button>
+
+    <br><br>
     模板ID: <input id="template" value="2" style="width: 30px" />
     <button id="mission_execute">发送任务</button>
     <button id="mission_cancel">取消任务</button>
@@ -44,6 +52,10 @@
     <br>
     <button id="mobile_platform_move_reset">移动平台复位</button>
     <button id="mobile_platform_pressure_reset">压力传感器复位</button>
+    <button id="mobile_platform_error">查询错误</button>
+    <br>
+    使能: <input id="status" value="0" style="width:40px" />
+    <button id="mobile_platform_status">发送使能状态</button>
 
     <script>
         let mission_id = null;
@@ -198,6 +210,41 @@
             }));
         };
 
+        document.getElementById('move').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/move', {
+                method: 'POST',
+                body: JSON.stringify({
+                    distance: parseFloat(document.querySelector('#distance').value),
+                    speed: parseFloat(document.querySelector('#speed1').value),
+                    robot_id: document.querySelector('#robot_id').value,
+                    token: document.querySelector('#token').value
+                }),
+            }).then(res => res.text().then(res => {
+                if (res.error) {
+                    alert(res.error);
+                } else {
+                    alert(res);
+                }
+            }));
+        };
+
+        document.getElementById('rotate_send').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/rotate', {
+                method: 'POST',
+                body: JSON.stringify({
+                    rotate: parseFloat(document.querySelector('#rotate').value),
+                    robot_id: document.querySelector('#robot_id').value,
+                    token: document.querySelector('#token').value
+                }),
+            }).then(res => res.text().then(res => {
+                if (res.error) {
+                    alert(res.error);
+                } else {
+                    alert(res);
+                }
+            }));
+        };
+
         document.getElementById('mission_execute').onclick = () => {
             fetch(document.querySelector('#server').value + '/v1/mission_execute', {
                 method: 'POST',
@@ -299,6 +346,23 @@
             }));
         };
 
+        document.getElementById('mobile_platform_error').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/mobile_platform_error', {
+                method: 'POST',
+                body: JSON.stringify({
+                    id: parseInt(document.querySelector('#id').value),
+                    token: document.querySelector('#token').value
+                }),
+            }).then(res => res.text().then(res => {
+                let msg = JSON.parse(res);
+                    if (msg.data) {
+                        alert(res + ' ' + (Date.now()-msg.data.timestamp-s) + 'ms');
+                    } else {
+                        alert(res);
+                    }
+            }));
+        };
+
         document.getElementById('mobile_platform_send').onclick = () => {
             fetch(document.querySelector('#server').value + '/v1/mobile_platform_send', {
                 method: 'POST',
@@ -307,6 +371,23 @@
                     x: parseFloat(document.querySelector('#x').value),
                     y: parseFloat(document.querySelector('#y').value),
                     z: parseFloat(document.querySelector('#z').value),
+                    id: parseInt(document.querySelector('#id').value),
+                    token: document.querySelector('#token').value
+                }),
+            }).then(res => res.text().then(res => {
+                if (res.error) {
+                    alert(res.error);
+                } else {
+                    alert(res);
+                }
+            }));
+        };
+
+        document.getElementById('mobile_platform_status').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/mobile_platform_status', {
+                method: 'POST',
+                body: JSON.stringify({
+                    status: parseFloat(document.querySelector('#status').value),
                     id: parseInt(document.querySelector('#id').value),
                     token: document.querySelector('#token').value
                 }),
