@@ -5,15 +5,15 @@ import threading
 
 def tcplink(conn, addr):
     print("Accept new connection from %s:%s" % addr)
-    conn.send(b"Welcome!\n")
+    conn.send(b"Connection created...\n")
     try:
         while True:
-            conn.send(b"What's your name?")
+            conn.send(b"Waiting for message")
             data = conn.recv(1024)
             if data == b"exit":
-                conn.send(b"Good bye!\n")
+                conn.send(b"Exit...\n")
                 break
-            conn.send(b"Hello %s!\n" % data)
+            conn.send(b"Receive message: %s!\n" % data)
     except:
         conn.close()
     print("Connection from %s:%s is closed" % addr)

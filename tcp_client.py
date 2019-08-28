@@ -7,14 +7,14 @@ print(s.recv(1024).decode())
 data = "client"
 
 while True:
-	if data:
-		print(s.recv(1024).decode())
-	data = input("Please input your name: ")
-	if not data:
-		continue
-	s.send(data.encode())
-	print(s.recv(1024).decode())
-	if data == "exit":
-		break
+    if data:
+        print(s.recv(1024).decode())
+    data = input("Please input your name: ")
+    if not data:
+        continue
+    s.send(data.encode())
+    print(s.recv(1024).decode())
+    if data == "exit":
+        break
 
 s.close()
