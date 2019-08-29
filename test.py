@@ -7,7 +7,6 @@ import requests as req
 import time
 from threading import Thread
 
-
 class Test(object):
     def __init__(self, root, server, token, id_group):
         # 定义主窗口
@@ -16,7 +15,6 @@ class Test(object):
         self.master.geometry('1000x600')
         self.master.resizable(width=False, height=False)
         self.master.configure(background='white')
-
         self.warn = False
 
         # 选择调试AGV
@@ -56,7 +54,7 @@ class Test(object):
         self.return_follow = tk.StringVar()
         self.return_follow.set("接收返回值")
         self.return_box_1 = tk.Entry(self.master, width=25, font=('Arial', 10), textvariable=self.return_follow).place(x=350,y=120)
-        
+
         # 直线运动，或转向，输入速度或角速度
         ## 按钮
         self.button_2 = ttk.Button(self.master, text='Move / Rotate', width='16', command=self.func_2)
@@ -117,7 +115,6 @@ class Test(object):
         self.robot_id = self.id_group[self.agv_var.get()]['robot_id']
         self.id_ = self.id_group[self.agv_var.get()]['id_']
 
-
     def func_1(self):
         """
         Follow 按钮功能，三轴不动AGV旋转
@@ -165,7 +162,7 @@ class Test(object):
 
     def read_sensor(self):
         # while not self.warn and self.moving:
-        job = req.post(self.server + self.mobile_platform_pressure, json={'id' : self.id_,
+        job = req.post(self.server + self.mobile_platform_pressure, json={'id' : self.info.id_,
                                                                         'token' : self.token})
         data = job.json()['data']
         self.cur_pressure.set('x:{:3.2f}, y:{:3.2f}, z:{:3.2f}'.format(data['x'], data['y'], data['z']))

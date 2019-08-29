@@ -33,6 +33,7 @@
     |
     角度: <input id="rotate" value="0" style="width:40px" />
     <button id="rotate_send">发送转动</button>
+    <button id="cancel">取消运动</button>
 
     <br><br>
     模板ID: <input id="template" value="2" style="width: 30px" />
@@ -114,6 +115,22 @@
                     robot_id: document.querySelector('#robot_id').value,
                     speed: 0.6,
                     angle: 0,
+                }),
+            }).then(res => res.text().then(res => {
+                if (res.error) {
+                    alert(res.error);
+                } else {
+                    alert(res);
+                }
+            }));
+        };
+
+        document.getElementById('cancel').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/mission_cancel', {
+                method: 'POST',
+                body: JSON.stringify({
+                    token: document.querySelector('#token').value,
+                    robot_id: document.querySelector('#robot_id').value,
                 }),
             }).then(res => res.text().then(res => {
                 if (res.error) {
