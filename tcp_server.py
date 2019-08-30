@@ -4,6 +4,8 @@ import socket
 import threading
 
 def tcplink(conn, addr):
+    with open('coord.txt', 'r') as f:
+        coord = f.readline()
     print("Accept new connection from %s:%s" % addr)
     conn.send(b"Connection created...\n")
     try:
@@ -13,13 +15,20 @@ def tcplink(conn, addr):
             if data == b"exit":
                 conn.send(b"Exit...\n")
                 break
-            conn.send(b"Receive message: %s!\n" % data)
+            elif data == b"2":
+                conn.send(b"{}".format(coord))
+            elif data == b"1":
+                conn.send(b"1")
+            elif data.startswith('R'):
+                print("get data")
+            conn.send(b"1")
+
     except:
         conn.close()
     print("Connection from %s:%s is closed" % addr)
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind(("127.0.0.1", 6000))
+s.bind(("192.168.7.251", 6000))
 s.listen(5)
 print("Waiting for connection...")
 

@@ -213,7 +213,7 @@ class Test_three(object):
         #     if tmp_speed < speed and speed != 0:
         #         tmp_speed += 0.02
         st = time.time()
-        for i in range(60):#速度没设加减速，今天的加减速没push到github上，之后可以加，影响不大
+        for i in range(100):#速度没设加减速，今天的加减速没push到github上，之后可以加，影响不大
             if self.warn or self.stop_button:
                 job = req.post(self.server + self.vel, json={'token' : self.token,
                                                         'speed' : 0,
