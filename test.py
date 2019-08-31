@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import tkinter as tk
 from tkinter import ttk
-import tkinter.messagebox as tm
 from control import Controller
 import requests as req
 import time
@@ -56,7 +55,7 @@ class Test(object):
         self.return_follow = tk.StringVar()
         self.return_follow.set("接收返回值")
         self.return_box_1 = tk.Entry(self.master, width=25, font=('Arial', 10), textvariable=self.return_follow).place(x=350,y=120)
-        
+
         # 直线运动，或转向，输入速度或角速度
         ## 按钮
         self.button_2 = ttk.Button(self.master, text='Move / Rotate', width='16', command=self.func_2)
@@ -123,7 +122,7 @@ class Test(object):
         Follow 按钮功能，三轴不动AGV旋转
         """
         follow_var = float(self.follow_angle_var.get())
-        job = req.post(self.server + self.follow, json={'token' : self.token, 
+        job = req.post(self.server + self.follow, json={'token' : self.token,
                                                         'follow' : follow_var,
                                                         'robot_id' : self.robot_id})
         self.return_follow.set(job.json()['data'['code']])
@@ -199,7 +198,7 @@ if __name__ == "__main__":
     robot_id_group = {'1' : {'robot_id':'W50020190812003', 'id_':1},
                       '2' : {'robot_id':'W50020190703001', 'id_':2},
                       '3' : {'robot_id':'W50020190812002', 'id_':3}}
-    # 251 : 1 
+    # 251 : 1
     # 252 : 2
     # 253 : 3
 

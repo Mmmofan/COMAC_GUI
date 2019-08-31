@@ -4,7 +4,6 @@ from tkinter import ttk
 import requests as req
 import time
 from threading import Thread
-import threading
 
 class Test_three(object):
     def __init__(self, root, server, token, id_group):
@@ -159,7 +158,7 @@ class Test_three(object):
         self.z_coord = {1: self.z1_coord, 2: self.z2_coord, 3: self.z3_coord}
 
     #threadlocal感觉适合几个单独级别一样的线程，现在想写个3线程，每个线程底下还有两线程，所以先没用threadlocal
-    
+
     # 功能函数定义
 
     def set_id(self,id_):
@@ -208,7 +207,6 @@ class Test_three(object):
         self.moving[id_] = True
         speed = float(self.speed[id_].get())
         angle = float(self.angel[id_].get())
-        tmp_speed = 0
         # while not self.warn:
         #     if tmp_speed < speed and speed != 0:
         #         tmp_speed += 0.02

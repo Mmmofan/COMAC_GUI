@@ -4,8 +4,6 @@ import tkinter as tk
 import tkinter.messagebox as tm
 from tkinter import ttk
 from PIL import Image, ImageTk
-import requests as req
-import time
 
 # 控制模式界面
 class Controller(object):
