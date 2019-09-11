@@ -13,7 +13,7 @@
 import socket
 import json
 
-def UDP_Receiver(addr, port):
+def udp_receive(addr, port, number):
     '''
     {"coord":{"3":{"Flags":0,"TransCount":"2.4.","Valid":true,"X":6457.98193359375,"Y":-3672.16162109375,"Z":-9470.173828125}},
     "id":590593573,
@@ -27,17 +27,23 @@ def UDP_Receiver(addr, port):
             self.buffsize = buffsize
             self.addr = (self.server_host, self.server_port)
             self.data = []
-            self.udp_client = socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+            self.udp_client = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
             self.udp_client.bind(self.addr)
 
         def read_data(self):
             data = self.udp_client.recv(self.buffsize)
             dict_data = json.loads(data.decode('utf-8'))
             self.data = dict_data
+        
+        def close(self):
+            self.udp_client.close()
 
-    udp_receiver = UDP_Receiver(addr, port, 1024) # 创建UDP的接收模块
-    udp_receiver.read_data()
-    coord = udp_receiver.data["coord"]
-    id_ = udp_receiver.data["id"]
+    udp_receiver = UDP_Receiver(addr, port, 8192) # 创建UDP的接收模块
+    coords = []
+    ids = []
+    for i in range(number):
+        udp_receiver.read_data()
+        coords.append(udp_receiver.data["coord"])
+        ids.append(udp_receiver.data["id"])
     udp_receiver.close()
-    return coord, id_
+    return coords, ids

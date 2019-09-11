@@ -27,6 +27,8 @@ class Test_three(object):
         self.mobile_platform_move     = '/v1/mobile_platform_move'
         self.mobile_platform_send     = '/v1/mobile_platform_send'
         self.mobile_platform_pressure = '/v1/mobile_platform_pressure'
+        self.move_addr = '/v1/move'
+        self.rotate = '/v1/rotate_send'
         self.moving1 = None #三个车的一个flag指标，每个车一个，这个车停了，这个指标会告诉力传感器读数停止
         self.moving2 = None
         self.moving3 = None
@@ -46,8 +48,8 @@ class Test_three(object):
         self.labe11 = tk.Label(self.master, text='AGV1', width='16', bg='yellow').place(x=200, y=100)
         self.labe12 = tk.Label(self.master, text='AGV2', width='16', bg='yellow').place(x=400, y=100)
         self.labe13 = tk.Label(self.master, text='AGV3', width='16', bg='yellow').place(x=600, y=100)
-        self.labe21 = tk.Label(self.master, text='运行速度', width='14', bg='white').place(x=50, y=150)
-        self.labe22 = tk.Label(self.master, text='旋转速度', width='14', bg='white').place(x=50, y=200)
+        self.labe21 = tk.Label(self.master, text='运行距离', width='14', bg='white').place(x=50, y=150)
+        self.labe22 = tk.Label(self.master, text='旋转角度', width='14', bg='white').place(x=50, y=200)
         self.labe31 = tk.Label(self.master, text='传感器返回值', width='14', bg='white').place(x=50, y=250)
         self.labe32 = tk.Label(self.master, text='传感器阀值', width='14', bg='white').place(x=50, y=300)
         self.agv1_speed = tk.StringVar()
@@ -161,7 +163,7 @@ class Test_three(object):
 
     # 功能函数定义
 
-    def set_id(self,id_):
+    def set_id(self, id_):
         # 一个id输入就够了
         # robot_id = self.id_group[id]['robot_id']
         # id_= self.id_group[id]['id_']
@@ -195,41 +197,48 @@ class Test_three(object):
         threads = []
         if self.agv1_check.get():
             threads.append(Thread(target=self.set_id, args=(1,))) #三条线程，都是set_id出发，设置每台车id，输入值为该车ID
-        # if self.agv2_check.get():
-        #     threads.append(Thread(target=self.set_id, args=(2,)))
-        # if self.agv3_check.get():
-        #     threads.append(Thread(target=self.set_id, args=(3,)))
+        if self.agv2_check.get():
+            threads.append(Thread(target=self.set_id, args=(2,)))
+        if self.agv3_check.get():
+            threads.append(Thread(target=self.set_id, args=(3,)))
 	# 启动已加入线程
         for t in threads:
             t.start()
 
-    def move(self,id_):
+    def move(self, id_):
         self.moving[id_] = True
-        speed = float(self.speed[id_].get())
-        angle = float(self.angel[id_].get())
+        # speed = float(self.speed[id_].get())
+        speed = 0.1
+        distance = float(self.speed[id_].get())
+        # angle = float(self.angel[id_].get())
         # while not self.warn:
         #     if tmp_speed < speed and speed != 0:
         #         tmp_speed += 0.02
         st = time.time()
-        for i in range(100):#速度没设加减速，今天的加减速没push到github上，之后可以加，影响不大
-            if self.warn or self.stop_button:
-                job = req.post(self.server + self.vel, json={'token' : self.token,
-                                                        'speed' : 0,
-                                                        'angle' : 0,
-                                                        'robot_id' :self.id_group[id_]['robot_id']})
-            else:
-                job = req.post(self.server + self.vel, json={'token' : self.token,
+        if self.warn or self.stop_button:
+            job = req.post(self.server + self.move_addr, json={'token' : self.token,
+                                                    'speed' : 0,
+                                                    'distance' : 0,
+                                                    'robot_id' :self.id_group[id_]['robot_id']})
+        else:
+            job = req.post(self.server + self.move_addr, json={'token' : self.token,
                                                         'speed' : speed,
-                                                        'angle' : angle,
+                                                        'distance' : distance,
                                                         'robot_id' :self.id_group[id_]['robot_id']})
-                time.sleep(1/20.0)
-        print(time.time()-st)
+        print(job.json())
         self.moving[id_] = False
+    
+    def rotate(self, id_):
+        # 获取角度
+        angle = float(self.angle[id_].get())
+        job = req.post(self.server + self.rotate, json={'token': self.token,
+                                                        'robot_id': self.id_group[id_]['robot_id'],
+                                                        'rotate': angle})
 
-    def read_sensor(self,id_):
+    def read_sensor(self, id_):
 
         # while not self.warn and self.moving[id]:#如果没报警，没停车，一直读数
-        while True:  # 如果没报警，没停车，一直读数
+        while not self.warn:  # 如果没报警，没停车，一直读数
             job = req.post(self.server + self.mobile_platform_pressure, json={'id' : id_,
                                                                             'token' : self.token})
             data = job.json()['data']
@@ -243,7 +252,7 @@ class Test_three(object):
         self.warn = False
         self.stop_button = False
 
-    def move_poge(self,id_):
+    def move_poge(self, id_):
         t = float(self.t_num.get())
         x = float(self.x_coord[id_].get())
         y = float(self.y_coord[id_].get())
@@ -251,7 +260,7 @@ class Test_three(object):
         job = req.post(self.server + self.mobile_platform_send, json={'t': t,'x' : x, 'y' : y, 'z' : z,
                                                                     'id' : id_, 'token': self.token})
 
-    def read_coord(self,id_):
+    def read_coord(self, id_):
         while True:
             job = req.post(self.server + self.mobile_platform_move, json={'id': id_,
                                                                     'token': self.token})
