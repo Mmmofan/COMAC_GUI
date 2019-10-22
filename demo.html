@@ -26,6 +26,13 @@
     <button id="robot_disabled_true">禁用</button>
     <button id="robot_disabled_false">启用</button>
 
+    <br/>
+    
+    <button id="camera_up">摄像头开</button>
+    <button id="camera_down">摄像头关</button>
+    <button id="camera_back">摄像头查询</button>
+    
+
     <br><br>
     距离: <input id="distance" value="0" style="width:40px" />
     速度: <input id="speed1" value="0" style="width:40px" />
@@ -155,6 +162,45 @@
                     } else {
                         alert(res);
                     }
+            }));
+        };
+
+        
+        document.getElementById('camera_up').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/camera', {
+                method: 'POST',
+                body: JSON.stringify({
+                    token: document.querySelector('#token').value,
+                    robot_id: document.querySelector('#robot_id').value,
+                    up: true,
+                }),
+            }).then(res => res.text().then(res => {
+                alert(res);
+            }));
+        };
+
+        document.getElementById('camera_down').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/camera', {
+                method: 'POST',
+                body: JSON.stringify({
+                    token: document.querySelector('#token').value,
+                    robot_id: document.querySelector('#robot_id').value,
+                    up: false,
+                }),
+            }).then(res => res.text().then(res => {
+                alert(res);
+            }));
+        };
+
+        document.getElementById('camera_back').onclick = () => {
+            fetch(document.querySelector('#server').value + '/v1/camera_back', {
+                method: 'POST',
+                body: JSON.stringify({
+                    token: document.querySelector('#token').value,
+                    robot_id: document.querySelector('#robot_id').value,
+                }),
+            }).then(res => res.text().then(res => {
+                alert(res);
             }));
         };
 

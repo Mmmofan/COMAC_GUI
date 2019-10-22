@@ -44,7 +44,7 @@ class Conn(object):
         self.port_val_udp.set(10000)
 
         self.number_of_box = tk.IntVar()
-        self.number_of_box.set(4)
+        self.number_of_box.set(3)
 
         self.label_tcp = tk.Label(self.master, text='TCP', width='8', bg='yellow').place(x=20, y=70)
         self.label_udp = tk.Label(self.master, text='UDP', width='8', bg='yellow').place(x=20, y=120)
@@ -73,22 +73,24 @@ class Conn(object):
         wing_pose = pose[1].strip('\n')
         AGV_pose = AGV_pose.split('&')
         wing_pose = wing_pose.split('&')
-        # 得到四个数组，分别为3个AGV和机翼的当前位姿[x, y, z, a, b, c]
-        # R1 - R3: 三个AGV在全局坐标系下的位姿
-        # W：机翼在全局坐标系下的位姿
+        '''
+        得到四个数组，分别为3个AGV和机翼的当前位姿[x, y, z, a, b, c]
+        R1 - R3: 三个AGV在全局坐标系下的位姿
+        W：机翼在全局坐标系下的位姿
+        '''
         R1 = AGV_pose[0].split(':')
-        R1 = [float(x) for x in R1[1:]]
+        R1 = [float(x) for x in R1[1:]] # [x, y, z, a, b, c]
         R2 = AGV_pose[1].split(':')
-        R2 = [float(x) for x in R2[1:]]
+        R2 = [float(x) for x in R2[1:]] # [x, y, z, a, b, c]
         R3 = AGV_pose[2].split(':')
-        R3 = [float(x) for x in R3[1:]]
+        R3 = [float(x) for x in R3[1:]] # [x, y, z, a, b, c]
         W = wing_pose[3].split(':')
-        W  = [float(x) for x in W[1:]]
+        W  = [float(x) for x in W[1:]] # [x, y, z, a, b, c]
         # 当前输入位姿
         w_x, w_y, w_z, w_a, w_b, w_c = W[0], W[1], W[2], W[3], W[4], W[5]
-        # 目标输入位姿
-        o_a, o_b, o_c = None, None, None
-        # 球头在局部坐标系下的坐标
+        # 目标输入姿态
+        o_a, o_b, o_c = -177.1303, 90, -87.1303  # 旋转角度
+        # 球头在机翼局部坐标系下的坐标
         p1_local = [-1232.89, 986.31, -369.90]
         p2_local = [-1140.64, 2479.64, -249.89]
         p3_local = [-1940.14, 3979.78, -132.91]
@@ -110,7 +112,7 @@ class Conn(object):
         coordinator3 = req_post(self.server + self.platform_move, json={"id": 3, "token": self.token}).json()['data']
 
         for k in range(n):
-            # 每步转动的角度
+            # 每步转动到的角度
             delta_alpha = self.pos_track(o_a, w_a, T/n*k, T)
             delta_beta  = self.pos_track(o_b, w_b, T/n*k, T)
             delta_gamma = self.pos_track(o_c, w_c, T/n*k, T)
@@ -122,16 +124,37 @@ class Conn(object):
             dist1 = [(p1_t[i] - p1[i]) for i in range(3)]
             dist2 = [(p2_t[i] - p2[i]) for i in range(3)]
             dist3 = [(p3_t[i] - p3[i]) for i in range(3)]
-            # 计算每个AGV的三轴各自的运动量
-            T1 = Thread(target=self.platform_send, args=(1, 200, dist1[0], dist1[1], dist1[2]))
-            T2 = Thread(target=self.platform_send, args=(2, 200, dist2[0], dist2[1], dist2[2]))
-            T3 = Thread(target=self.platform_send, args=(3, 200, dist3[0], dist3[1], dist3[2]))
+            # 计算球头在其局部坐标系下的移动量
+            dist1_trans = self.rotation_matrix(dist1, R1[3], R1[4], R1[5])
+            dist2_trans = self.rotation_matrix(dist2, R2[3], R2[4], R2[5])
+            dist3_trans = self.rotation_matrix(dist3, R3[3], R3[4], R3[5])
+
+            T1 = Thread(target=self.platform_send, args=(1, T/n*1000, dist1_trans[0], dist1_trans[1], dist1_trans[2]))
+            T2 = Thread(target=self.platform_send, args=(2, T/n*1000, dist2_trans[0], dist2_trans[1], dist2_trans[2]))
+            T3 = Thread(target=self.platform_send, args=(3, T/n*1000, dist3_trans[0], dist3_trans[1], dist3_trans[2]))
             T1.start()
             T2.start()
             T3.start()
 
             del T1, T2, T3
 
+    def rotation_matrix(self, pi, alpha, beta, gamma):
+        '''
+        pi: [xi, yi, zi]
+        '''
+        pi = np.array(pi).T
+        R_x = np.array([[1, 0, 0], 
+                        [0, np.cos(gamma), -np.sin(gamma)],
+                        [0, np.sin(gamma), np.cos(gamma)]])
+        R_y = np.array([[np.cos(beta), 0, np.sin(beta)],
+                        [0, 1, 0],
+                        [-np.sin(beta), 0, np.cos(beta)]])
+        R_z = np.array([[np.cos(alpha), -np.sin(alpha), 0],
+                        [np.sin(alpha), np.cos(alpha), 0],
+                        [0, 0, 1]])
+        R_phi = np.dot(np.dot(R_z, R_y), R_x)  ## 根据选择顺序决定
+        res = np.dot(R_phi, pi)
+        return res
 
     def platform_send(self, id_, t, x, y, z):
         """
@@ -241,7 +264,7 @@ class Conn(object):
             f.write('1\n')
             f.write(res_seq)
             # f.write(wing_res)
-        # print("write coord")
+        print("write coord")
 
     def tcp_connect(self):
         addr_tcp = self.addr_val_tcp.get()
@@ -256,17 +279,19 @@ class Conn(object):
             try:
                 while True:
                     with open('coord.txt', 'r') as f:
-                        data = f.readlines()
-                    data = [x.strip('\n') for x in data]
+                        # data = f.readlines()
+                        data = [x.strip('\n') for x in f.readlines()]
+                    # data = [x.strip('\n') for x in data]
                     client = conn.recv(8192).decode('utf-8')
-                    # print("get data: " + client)
+                    # 没有读取数据，0发0收
                     if client == "0" and data[0]=="0":
                         conn.send("0".encode('utf-8'))
                         continue
+                    # 读取数据之后，发送坐标解算
                     elif client == "0" and data[0] == "1":
                         conn.send(data[1].encode('utf-8'))
                         self.AGV_Rt_str = conn.recv(8192).decode('utf-8')
-                        data.append(compute_local_coord(seflf.AGV_Rt_str))
+                        data.append(compute_local_coord(self.AGV_Rt_str))
                         conn.send(data[2].encode('utf-8'))
                         self.wing_Rt_str = conn.recv(8192).decode('utf-8')
                         # 重新改为0，不测量
@@ -309,7 +334,7 @@ class Conn(object):
 
     def parse_Rt(self, AGV, wing):
         """
-        解析AGV和机翼的位姿，以Json格式写入result.txt
+        解析AGV和机翼的位姿，以Json格式写入Poses.txt
         """
         with open('result.txt', 'w') as f:
             f.write(AGV+'\n')
@@ -326,7 +351,7 @@ class Conn(object):
                  W[0]: {"x":W[1], "y":W[2], "z":W[3], "a":W[4], "b":W[5], "c":W[6]}
                  }
         result = dumps(R_str)
-        with open('Rotate_and_trans.txt', 'w') as f:
+        with open('Poses.txt', 'w') as f:
             f.write(result)
 
 
