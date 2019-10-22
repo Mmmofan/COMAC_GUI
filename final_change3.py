@@ -7,7 +7,6 @@ from threading import Thread
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import requests as req
 
 from fuzzy_controller import fuzzy_controller
@@ -15,24 +14,24 @@ from fuzzy_controller import fuzzy_controller
 
 class three_all_change(object):
     def __init__(self, root, server, token, id_group, zfirst=0., xcar=0., ycar=0., xcord=0., ycord=0., zcord=0.,
-    nxcord=0., nycord=0., nzcord=0., nxcar=0., nycar=0., nzfirst=0.):
+        nxcord=0., nycord=0., nzcord=0., nxcar=0., nycar=0., nzfirst=0.):
         # 定义主窗口
         self.end = False
         self.master = root
-        self.nxcar=nxcar
-        self.nycar=nycar
-        self.nzfirst=nzfirst
-        self.nxcord=nxcord
-        self.nycord=nycord
-        self.nzcord=nzcord
-        self.xcar=xcar
-        self.ycar=ycar
-        self.xcord=xcord
-        self.ycord=ycord
-        self.zcord=zcord
-        self.zfirst=zfirst
-        self.flag=1
-        self.stop=0
+        self.nxcar = nxcar
+        self.nycar = nycar
+        self.nzfirst = nzfirst
+        self.nxcord = nxcord
+        self.nycord = nycord
+        self.nzcord = nzcord
+        self.xcar = xcar
+        self.ycar = ycar
+        self.xcord = xcord
+        self.ycord = ycord
+        self.zcord = zcord
+        self.zfirst = zfirst
+        self.flag = 1
+        self.stop = 0
         self.master.title('COMAC')
         self.plot_flag=False
         self.master.geometry('1080x960')
@@ -54,18 +53,17 @@ class three_all_change(object):
         self.mobile_platform_move     = '/v1/mobile_platform_move'
         self.mobile_platform_send     = '/v1/mobile_platform_send'
         self.mobile_platform_pressure = '/v1/mobile_platform_pressure'
-        self.move_ = '/v1/move'
-        self.mission_cancel = '/v1/mission_cancel'
-        self.odom='/v1/robot_odom'
-        self.mission_execute                   = '/v1/mission_execute'
-        self.mission_execute_mutli = '/v1/mission_execute_mutli'
-        self.mission = '/v1/missions'
-        self.camera_back = '/v1/camera_back'
-        self.camera = '/v1/camera'
-        self.robot_poses = '/v1/robot_poses'
+        self.move_                    = '/v1/move'
+        self.mission_cancel           = '/v1/mission_cancel'
+        self.odom                     ='/v1/robot_odom'
+        self.mission_execute          = '/v1/mission_execute'
+        self.mission_execute_mutli    = '/v1/mission_execute_mutli'
+        self.mission                  = '/v1/missions'
+        self.camera_back              = '/v1/camera_back'
+        self.camera                   = '/v1/camera'
+        self.robot_poses              = '/v1/robot_poses'
 
         self.labe11 = tk.Label(self.master, text='移载式可重构对接控制系统 ', width='75', bg='blue',font=('黑体', 20)).place(x=1, y=30)
-
 
         self.labe12 = tk.Label(self.master, text='1#移载单元', width='16', bg='light yellow').place(x=200, y=70)
         self.labe13 = tk.Label(self.master, text='2#移载单元', width='16', bg='light yellow').place(x=350, y=70)
@@ -152,7 +150,6 @@ class three_all_change(object):
         self.agv2_coord.set('2#定位器当前坐标')
         self.agv2_coord_box=tk.Entry(self.master,width=16, font=('Arial', 10),bg='light gray', textvariable=self.agv2_coord).place(x=350,y=100)
 
-
         self.agv3_sensor=tk.StringVar()
         self.agv3_sensor.set('3#定位器当前受力')
         self.agv3_sensorr_box=tk.Entry(self.master,width=16, font=('Arial', 10),bg='light gray', textvariable=self.agv3_sensor).place(x=500,y=150)
@@ -190,8 +187,7 @@ class three_all_change(object):
         self.fy = {1:0,2:0,3:0}
         self.record = {1:{'x':[],'y':[],'t':[]},2:{'x':[],'y':[],'t':[]},3:{'x':[],'y':[],'t':[]}}
         self.pogo_coord = {1:{'x':0,'y':0,'z':0},2:{'x':0,'y':0,'z':0},3:{'x':0,'y':0,'z':0}}
-        self.plot_record = {1:{'x':[],'y':[],'t':[]},2:{'x':[],'y':[],'t':[]},3:{'x':[],'y':[],'t':[]}}
-    
+
     def non_all_start(self):
         '''
         一键归位
@@ -205,18 +201,18 @@ class three_all_change(object):
         '''
         归位移动过程启动
         '''
-        ang = -1.0 * float(self.rotary.get())
-        # ang = float(self.rotary.get())
+        # ang = -1.0 * float(self.rotary.get())
+        ang = float(self.rotary.get())
         self.move_pogo_startz(self.nzcord)
         self.move_pogo_starty(self.nycord)
         self.move_pogo_startx(self.nxcord)
         self.flag = 1
         # 随动到正向
-        #t_f1 = Thread(target=self.follow_three, args=(1, -ang*2,))
-        #t_f2 = Thread(target=self.follow_three, args=(2, -ang*2,))
-        #t_f3 = Thread(target=self.follow_three, args=(3, -ang*2,))
-        #t_f1.start(), t_f2.start(), t_f3.start()
-        #t_f1.join(), t_f2.join(), t_f3.join()
+        t_f1 = Thread(target=self.follow_three, args=(1, -3.14,))
+        t_f2 = Thread(target=self.follow_three, args=(2, -3.14,))
+        t_f3 = Thread(target=self.follow_three, args=(3, -3.14,))
+        t_f1.start(), t_f2.start(), t_f3.start()
+        t_f1.join(), t_f2.join(), t_f3.join()
         # 开启报警
         t14 = Thread(target=self.tik, args=(1,))
         t15 = Thread(target=self.tik, args=(2,))
@@ -301,7 +297,7 @@ class three_all_change(object):
         # print("force_x",force_x)
         # print("force_y",force_y)
         # print("force_z",req.post(self.server + self.mobile_platform_pressure, json={'id' : id_,'token' : self.token}).json()['data']['z'])
-                
+
     def adapt(self, id_, normalx, normaly, normalz):
         '''
         相机通过标定寻找位置
@@ -360,21 +356,28 @@ class three_all_change(object):
         job1 = req.post(self.server + self.camera, json={'token': self.token, 'robot_id':self.id_group[id_]['robot_id'],'up':True})
         job2 = req.post(self.server + self.camera_back, json={'token': self.token,'robot_id':self.id_group[id_]['robot_id']})
         data = job2.json()
-        i=0
+        i = 0
         while data["data"]["stride"]==0:
             if i <= 20:
-                self.read_move(id_,1.0,3)
+                self.read_move(id_, 1.0, 3)
             else:
-                self.read_move(id_,-1.0,3)
+                self.read_move(id_, -1.0, 3)
             i+=1
             data = job2.post(self.server + self.camera_back, json={'token':self.token, 'robot_id':self.id_group[id_]['robot_id']}).json()
-        
-    def read_move(self, id_, dis_, num,t):
-        
+
+    def read_move(self, id_, dis_, num, t):
+        '''
+        初始时摄像头升高
+        Args:
+            id_: robot_id
+            dis_: 移动距离
+            num: 轴编号，x,y,z -> 1,2,3
+            t: 时间
+        '''
         job1 = req.post(self.server + self.mobile_platform_move, json={'id': id_,
                                                                         'token': self.token})
-        b=[0,0,0]  
-        b[num-1]=1                                         
+        b = [0,0,0]  
+        b[num-1] = 1                                         
         x = job1.json()['data']['x']
         y = job1.json()['data']['y']
         z = job1.json()['data']['z']
@@ -445,7 +448,12 @@ class three_all_change(object):
         time.sleep(0.5)
         self.move_poge(ang)
 
-    def tik(self,id_):
+    def tik(self, id_):
+        '''
+        急停功能，力超过限制急停发送急停指令
+        Args:
+            id_: robot_id
+        '''
         while True:
             if self.warn:
                 self.warn=False
@@ -475,7 +483,7 @@ class three_all_change(object):
             id_: robot_id
             dis: 移动距离
         '''
-        while self.end:
+        if self.end:
             return
         speed = float(self.agv1_speed.get())
 
@@ -553,7 +561,7 @@ class three_all_change(object):
             id_: robot_id
             ang: 三轴相对移动角度
         '''
-        while self.end:
+        if self.end:
             return
         job = req.post(self.server + self.follow, json={'token': self.token,
                                                                     'follow':ang, 'robot_id' : self.id_group[id_]['robot_id'] })
@@ -604,7 +612,7 @@ class three_all_change(object):
         t3.start()
         t1.join(), t2.join(), t3.join()
 
-    def move_poge_rel(self,id_,num,dis):
+    def move_poge_rel(self, id_, num, dis):
         t = float(self.t_num.get())
         # print("t_num.get():",t)
         x = self.pogo_coord[id_]['x']
@@ -686,7 +694,7 @@ class three_all_change(object):
                                                                             'token' : self.token})
             data = job.json()['data']
             fx=data['x']
-            self.record[id_]['x']+=[fx]
+            self.record[id_]['x'] += [fx]
             fy=data['y']
             self.record[id_]['y'] += [fy]
             self.record[id_]['t'] += [tim]
@@ -696,30 +704,30 @@ class three_all_change(object):
             if((abs(data['x'])>30 or abs(data['y'])>30)):
                 fx_= self.scaling(fx)
                 fy_= self.scaling(fy)
-                dfx_=fx_-self.fx[id_]
-                dfy_=fy_-self.fy[id_]
-                self.f_sum[id_][1]+=fx_
-                self.f_sum[id_][2]+=fy_
-                self.fx[id_]=fx_
-                self.fy[id_]=fy_
-                kpx,kix,kdx=self.fuzzy_controller_x.output(fx_,dfx_)
+                dfx_ = fx_-self.fx[id_]
+                dfy_ = fy_-self.fy[id_]
+                self.f_sum[id_][1] += fx_
+                self.f_sum[id_][2] += fy_
+                self.fx[id_] = fx_
+                self.fy[id_] = fy_
+                kpx,kix,kdx = self.fuzzy_controller_x.output(fx_,dfx_)
                 kpy, kiy, kdy = self.fuzzy_controller_x.output(fy_, dfy_)
-                vx=self.pid(kpx,kix,kdx,fx_,dfx_,id_,1) 
-                vy=self.pid(kpy,kiy,kdy,fy_,dfy_,id_,2)
-                dis=3
-                if abs(vx)<=abs(vy):
-                    dis_y=dis*vy/abs(vy)
-                    time_=dis/abs(vy)
-                    dis_x=vx*time_
+                vx = self.pid(kpx,kix,kdx,fx_,dfx_,id_,1) 
+                vy = self.pid(kpy,kiy,kdy,fy_,dfy_,id_,2)
+                dis = 3
+                if abs(vx) <= abs(vy):
+                    dis_y = dis*vy/abs(vy)
+                    time_ = dis/abs(vy)
+                    dis_x = vx*time_
                     self.move_coord(id_, time_*1000, x+dis_x, y+dis_y, z)
                 else:
-                    dis_x=dis*vx/abs(vx)
-                    time_=dis/abs(vx)
-                    dis_y=vy*time_
+                    dis_x = dis*vx/abs(vx)
+                    time_ = dis/abs(vx)
+                    dis_y = vy*time_
                     self.move_coord(id_, time_*1000, x+dis_x, y+dis_y, z)
-                x=x+dis_x
-                y=y+dis_y
-            tim+=0.01
+                x = x+dis_x
+                y = y+dis_y
+            tim += 0.01
         # print("over")
 
     def move_coord(self, id_, t=2000., x=30., y=40., z=50.):
@@ -765,10 +773,6 @@ class three_all_change(object):
             fx = data['x']
             fy = data['y']
             t = data['timestamp']
-            self.plot_record[id_]['x'] += [fx]
-            self.plot_record[id_]['y'] += [fy]
-            self.plot_record[id_]['t'] += [t]
-            # print("time:",t)
             self.sensor[id_].set('x:{:3.2f}, y:{:3.2f}, z:{:3.2f}'.format(data['x'], data['y'], data['z']))
             if abs(data['x']) > 250 or abs(data['y']) > 250:
                 self.warn = True
