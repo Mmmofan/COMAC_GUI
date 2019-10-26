@@ -213,6 +213,8 @@ class three_all_change(object):
         t_f3 = Thread(target=self.follow_three, args=(3, -3.14,))
         t_f1.start(), t_f2.start(), t_f3.start()
         t_f1.join(), t_f2.join(), t_f3.join()
+        del t_f1, t_f2, t_f3
+        time.sleep(15.0)
         # 开启报警
         t14 = Thread(target=self.tik, args=(1,))
         t15 = Thread(target=self.tik, args=(2,))
@@ -222,29 +224,36 @@ class three_all_change(object):
         t8 = Thread(target=self.force_control, args=(2,))
         t9 = Thread(target=self.force_control, args=(3,))
         # 开始移动
-        t4 = Thread(target=self.move, args=(1, self.nxcar,))
-        t5 = Thread(target=self.move, args=(2, self.nxcar,))
-        t6 = Thread(target=self.move, args=(3, self.nxcar,))
+        t4 = Thread(target=self.move, args=(1, self.ycar,))
+        t5 = Thread(target=self.move, args=(2, self.ycar,))
+        t6 = Thread(target=self.move, args=(3, self.ycar,))
         t14.start(), t15.start(), t16.start()
         t7.start(), t8.start(), t9.start()
         t4.start(), t5.start(), t6.start()
         t4.join(), t5.join(), t6.join()
+        del t4, t5, t6
         # 移动完后随动
-        t1 = Thread(target=self.follow_three, args=(1, ang,))
-        t2 = Thread(target=self.follow_three, args=(2, ang,))
-        t3 = Thread(target=self.follow_three, args=(3, ang,))
+        t1 = Thread(target=self.follow_three, args=(1, -ang,))
+        t2 = Thread(target=self.follow_three, args=(2, -ang,))
+        t3 = Thread(target=self.follow_three, args=(3, -ang,))
         t1.start(), t2.start(), t3.start()
         t1.join(), t2.join(), t3.join()
+        del t1, t2, t3
         # 随动之后继续前进
-        t10 = Thread(target=self.move, args=(1, self.nycar,))
-        t11 = Thread(target=self.move, args=(2, self.nycar,))
-        t12 = Thread(target=self.move, args=(3, self.xnycar,))  
+        t10 = Thread(target=self.move, args=(1, self.xcar,))
+        t11 = Thread(target=self.move, args=(2, self.xcar,))
+        t12 = Thread(target=self.move, args=(3, self.xcar,))  
         t10.start(), t11.start(), t12.start()
         t10.join(), t11.join(), t12.join()
+        del t10, t11, t12
         self.flag = 0
         time.sleep(0.5)
         self.move_pogo_startz_new(self.nzfirst) # 放下机翼
         self.move_poge_all() # 三轴归零
+        t_e1 = Thread(target=self.follow_three, args=(1, 3.14))
+        t_e2 = Thread(target=self.follow_three, args=(2, 3.14))
+        t_e3 = Thread(target=self.follow_three, args=(3, 3.14))
+        t_e1.start(), t_e2.start(), t_e3.start()
 
     def all_start_position(self):
         '''
@@ -254,28 +263,33 @@ class three_all_change(object):
         t1 = Thread(target=self.mission_move)
         t1.start() 
         t1.join()
+        del t1
         t4 = Thread(target=self.read_move, args=(1, 200, 3, 5000,))
         t5 = Thread(target=self.read_move, args=(2, 110, 3, 5000,))
         t6 = Thread(target=self.read_move, args=(3, 0, 3, 5000,))
         t4.start(), t5.start(), t6.start()
         t4.join(), t5.join(), t6.join()
+        del t4, t5, t6
         # 相机寻找球窝
         t7 = Thread(target=self.camera_, args=(1,))
         t8 = Thread(target=self.camera_, args=(2,))
         t9 = Thread(target=self.camera_, args=(3,))
         t7.start(), t8.start(), t9.start()
         t7.join(), t8.join(), t9.join()
+        del t7, t8, t9
         t10 = Thread(target=self.adapt, args=(1, -10, -2, 5,))
         t11 = Thread(target=self.adapt, args=(2, -4, 15, 5,))
         t13 = Thread(target=self.adapt, args=(3,-1,-9,-5,))
         t10.start(), t11.start(), t13.start()
         t10.join(), t11.join(), t13.join()
+        del t10, t11, t13
         # 插轴入孔
         t14 = Thread(target=self.adapt_z, args=(1,))
         t15 = Thread(target=self.adapt_z, args=(2,))
         t16 = Thread(target=self.adapt_z, args=(3,))
         t14.start(), t15.start(), t16.start()
         t14.join(), t15.join(), t16.join()
+        del t14, t15, t16
         print("preparing over...")
 
     def adapt_z(self, id_):
@@ -441,9 +455,8 @@ class three_all_change(object):
         t1.start(), t2.start(), t3.start()
         t4.start(), t5.start(), t6.start()
         t7.start(), t8.start(), t9.start()
-        t1.join()
-        t2.join()
-        t3.join()
+        t1.join(), t2.join(), t3.join()
+        del t1, t2, t3
         ang = float(self.rotary.get())
         time.sleep(0.5)
         self.move_poge(ang)
@@ -532,9 +545,8 @@ class three_all_change(object):
         t2 = Thread(target=self.follow_three, args=(2, ang,))
         t3 = Thread(target=self.follow_three, args=(3, ang,))
         t1.start(), t2.start(), t3.start()
-        t1.join()
-        t2.join()
-        t3.join()
+        t1.join(), t2.join(), t3.join()
+        del t1, t2, t3
         # time.sleep(0.5)
         # 直线运动
         t4 = Thread(target=self.move, args=(1, self.ycar,))
@@ -542,6 +554,7 @@ class three_all_change(object):
         t6 = Thread(target=self.move, args=(3, self.ycar,))
         t4.start(), t5.start(), t6.start()
         t4.join(), t5.join(), t6.join()
+        del t4, t5, t6
         # while self.warn:
         #     pass
         self.flag = 0
@@ -581,6 +594,7 @@ class three_all_change(object):
         t2.start()
         t3.start()
         t1.join(), t2.join(), t3.join()
+        del t1, t2, t3
 
     def move_pogo_starty(self, dis):
         t1 = Thread(target=self.move_poge_rel, args=(1, 2, dis,))
@@ -590,6 +604,7 @@ class three_all_change(object):
         t2.start()
         t3.start()
         t1.join(), t2.join(), t3.join()
+        del t1, t2, t3
 
     def move_pogo_startz(self, dis):
         t1 = Thread(target=self.move_poge_rel, args=(1, 3, dis,))
@@ -599,6 +614,7 @@ class three_all_change(object):
         t2.start()
         t3.start()
         t1.join(), t2.join(), t3.join()
+        del t1, t2, t3
 
     def move_pogo_startz_new(self, dis):
         '''
@@ -611,6 +627,7 @@ class three_all_change(object):
         t2.start()
         t3.start()
         t1.join(), t2.join(), t3.join()
+        del t1, t2, t3
 
     def move_poge_rel(self, id_, num, dis):
         t = float(self.t_num.get())
@@ -791,5 +808,5 @@ if __name__ == "__main__":
                       3 : {'robot_id':'W50020190812002', 'id_':3}}
 
     test = three_all_change(tk.Tk(), server, token, robot_id_group, zfirst=0, xcar=1.5, ycar=1.0, xcord=0, ycord=0, zcord=0,
-    nxcord=0, nycord=0., nzcord=0, nxcar=-1., nycar=-1.5, nzfirst=0)
+    nxcord=0, nycord=0., nzcord=0, nxcar=0., nycar=0., nzfirst=0)
     test.master.mainloop()

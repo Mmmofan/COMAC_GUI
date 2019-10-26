@@ -10,7 +10,7 @@
 #   Description :
 #
 #================================================================
-
+import os
 from json import dumps
 from UDP_conn import udp_receive
 import tkinter as tk
@@ -67,7 +67,7 @@ class Conn(object):
 
     def pose_alignment(self):
         # 打开3个AGV位姿和机翼当前位姿的信息
-        with open('result.txt', 'r') as f:
+        with open('data'+os.sep+'result.txt', 'r') as f:
             pose = f.readlines()
         AGV_pose = pose[0].strip('\n')
         wing_pose = pose[1].strip('\n')
@@ -260,7 +260,7 @@ class Conn(object):
             wing_res += '&'
         '''
 
-        with open('coord.txt', 'w') as f:
+        with open('data'+os.sep+'coord.txt', 'w') as f:
             f.write('1\n')
             f.write(res_seq)
             # f.write(wing_res)
@@ -278,7 +278,7 @@ class Conn(object):
             conn.send("Connection created...\n".encode('utf-8'))
             try:
                 while True:
-                    with open('coord.txt', 'r') as f:
+                    with open('data'+os.sep+'coord.txt', 'r') as f:
                         # data = f.readlines()
                         data = [x.strip('\n') for x in f.readlines()]
                     # data = [x.strip('\n') for x in data]
@@ -295,7 +295,7 @@ class Conn(object):
                         conn.send(data[2].encode('utf-8'))
                         self.wing_Rt_str = conn.recv(8192).decode('utf-8')
                         # 重新改为0，不测量
-                        with open('coord.txt', 'r+') as f:
+                        with open('data'+os.sep+'coord.txt', 'r+') as f:
                             f.write("0")
                         # 把收到的位姿信息解析，写入文件
                         self.parse_Rt(self.AGV_Rt_str, self.wing_Rt_str)
@@ -336,7 +336,7 @@ class Conn(object):
         """
         解析AGV和机翼的位姿，以Json格式写入Poses.txt
         """
-        with open('result.txt', 'w') as f:
+        with open('data'+os.sep+'result.txt', 'w') as f:
             f.write(AGV+'\n')
             f.write(wing)
         AGV = AGV.split('&')[:-1]
@@ -351,7 +351,7 @@ class Conn(object):
                  W[0]: {"x":W[1], "y":W[2], "z":W[3], "a":W[4], "b":W[5], "c":W[6]}
                  }
         result = dumps(R_str)
-        with open('Poses.txt', 'w') as f:
+        with open('data'+os.sep+'Poses.txt', 'w') as f:
             f.write(result)
 
 
